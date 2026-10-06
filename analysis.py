@@ -248,16 +248,30 @@ def _style_axes(ax) -> None:
     ax.spines["right"].set_visible(False)
 
 
-def plot_correlation_heatmap(frame: pd.DataFrame, title: str, path: Path | str | None = None):
-    """Heatmap of :func:`correlation_matrix`."""
+def _draw_heatmap(corr: pd.DataFrame, title: str):
+    import warnings
+
     import matplotlib.pyplot as plt
     import seaborn as sns
 
-    corr = correlation_matrix(frame)
     fig, ax = plt.subplots(figsize=(8.2, 6.6))
-    sns.heatmap(corr, annot=True, fmt=".2f", cmap="coolwarm", center=0, square=True, ax=ax)
+    # Copy the colormap so seaborn can mark missing cells without mutating the shared map.
+    cmap = plt.get_cmap("coolwarm").copy()
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            message="The set_bad function will be deprecated",
+            category=PendingDeprecationWarning,
+        )
+        sns.heatmap(corr, annot=True, fmt=".2f", cmap=cmap, center=0, square=True, ax=ax)
     ax.set_title(title)
     fig.tight_layout()
+    return fig
+
+
+def plot_correlation_heatmap(frame: pd.DataFrame, title: str, path: Path | str | None = None):
+    """Heatmap of :func:`correlation_matrix`."""
+    fig = _draw_heatmap(correlation_matrix(frame), title)
     _save(fig, path)
     return fig
 
@@ -311,13 +325,7 @@ def plot_rolling_correlation(pairwise: pd.DataFrame, title: str, path: Path | st
 
 def plot_period_correlation_heatmap(corr: pd.DataFrame, title: str, path: Path | str | None = None):
     """Heatmap for a period-mean correlation matrix."""
-    import matplotlib.pyplot as plt
-    import seaborn as sns
-
-    fig, ax = plt.subplots(figsize=(8.2, 6.6))
-    sns.heatmap(corr, annot=True, fmt=".2f", cmap="coolwarm", center=0, square=True, ax=ax)
-    ax.set_title(title)
-    fig.tight_layout()
+    fig = _draw_heatmap(corr, title)
     _save(fig, path)
     return fig
 

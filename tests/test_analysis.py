@@ -153,10 +153,10 @@ class SampleAndRepoTests(unittest.TestCase):
         self.assertEqual(set(result["models"]), set(analysis.HEADLINE_SPECS))
         with tempfile.TemporaryDirectory() as tmp:
             written = analysis.save_series_figures("sample alpha", result, tmp)
-        self.assertGreaterEqual(len(written), 3)
-        for path in written:
-            self.assertTrue(path.is_file())
-            self.assertGreater(path.stat().st_size, 0)
+            self.assertGreaterEqual(len(written), 3)
+            for path in written:
+                self.assertTrue(path.is_file(), msg=str(path))
+                self.assertGreater(path.stat().st_size, 0)
 
     def test_sources_have_no_local_user_paths(self):
         banned = ("C:/Users", "C:\\Users")
